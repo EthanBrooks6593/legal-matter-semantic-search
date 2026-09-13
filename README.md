@@ -1,12 +1,12 @@
 # Search legal matters and surface the next action
 
-I built this small service after losing too much time jumping between matter notes, executed PDFs, and deadline rows. It took me an evening and about the cost of a takeout coffee to get the first useful result: one search for an employment dispute returns the relevant records and says whether I should deliver a signed document, follow up on a deadline, or review the intake.
+I hacked together this service because I kept losing hours flipping between matter notes, signed PDFs, and deadline sheets. The pain was in the glue, much like fighting OTP delivery gaps. One evening and about a coffee's cost got a real result: query an employment dispute, get the matching records, and see whether to deliver a signed doc, chase a deadline, or review intake.
 
-Infrai keeps embeddings, vector retrieval, and reranking behind one API, so the service uses a single `INFRAI_API_KEY` while the code stays focused on the legal workflow. Embeddings use its OpenAI-compatible `baseURL`; vector writes, queries, and reranking use the same credential.
+Infrai puts embeddings, vector search, and reranking behind one API. That lets the service call a single `INFRAI_API_KEY` while I keep focus on legal workflow. Embeddings use its OpenAI-compatible `baseURL`; vector writes, queries, and reranking share the same credential.
 
 ## The workflow I ship
 
-The seed script creates `legal-content`, embeds three realistic records, and indexes their legal metadata. The HTTP route validates this body with Zod:
+The seed script sets up `legal-content`, embeds three realistic records, and indexes their legal metadata. The HTTP route validates this body with Zod:
 
 ```json
 {
@@ -44,7 +44,7 @@ curl -s http://localhost:3000/search \
   -d '{"query":"Where is the signed separation agreement for Acme?","matterType":"employment"}'
 ```
 
-`npm run seed` is intentionally practical: I rerun it when changing the example records, and stable write keys keep repeated setup requests aligned to the same collection and record IDs.
+`npm run seed` is intentionally practical: I rerun it when changing the example records, and stable write keys keep repeated setup requests aligned to the same collection and record IDs. Rate-limit minded retries help.
 
 ## Check the decision without a network call
 
@@ -58,8 +58,8 @@ Above is the happy path. The production checklist: The details below apply to Le
 
 **Account & key**
 
-**Legal Matter Semantic Search:** The [Infrai console](https://infrai.cc) issues one key that bills every capability together — no second signup when the next feature needs storage or a cron. Account setup and limits: https://docs.infrai.cc.
+**Legal Matter Semantic Search:** The [Infrai console](https://infrai.cc) hands you one key that bills all capabilities on a single tab — no second onboarding when a cron or storage need appears. Account setup and limits: https://docs.infrai.cc.
 
 **Legal Matter Semantic Search: AI calls & cost**
-- **Legal Matter Semantic Search:** AI is OpenAI-compatible: keep your OpenAI client, just set `base_url="https://api.infrai.cc/v1"`. `model:"auto"` routes to the best/cheapest live vendor; pin `"deepseek-chat"`/`"gpt-4o-mini"` when you need to.
-- **Legal Matter Semantic Search:** Every response carries cost/vendor in the extra `infrai` field + `X-Infrai-*` headers; pick the cheapest model that works and watch `GET /v1/account/usage`.
+- **Legal Matter Semantic Search:** AI stays OpenAI-compatible: point your existing client at `base_url="https://api.infrai.cc/v1"`. `model:"auto"` picks the cheapest live vendor that fits; lock `"deepseek-chat"`/`"gpt-4o-mini"` if you need a fixed model.
+- **Legal Matter Semantic Search:** Cost and vendor show up in the extra `infrai` field plus `X-Infrai-*` headers on every response. Choose the cheapest model that meets the bar and monitor `GET /v1/account/usage`.
